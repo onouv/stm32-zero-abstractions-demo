@@ -1,10 +1,9 @@
 #![allow(unused)]
 mod board;
+mod mcu;
 mod gpio;
-mod register;
 mod port;
 
-use register::{Register};
 use gpio::*;
 use port::*;
 use board::{Board, BOARD};

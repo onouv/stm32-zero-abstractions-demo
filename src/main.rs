@@ -1,13 +1,10 @@
 #![allow(unused)]
 mod board;
-mod mcu;
 mod gpio;
-mod port;
+mod mcu;
 
+use board::{BOARD, Board};
 use gpio::*;
-use port::*;
-use board::{Board, BOARD};
-
 
 fn demo_memory_usages() {
     let s = core::mem::size_of::<DisabledInput>();
@@ -21,11 +18,11 @@ fn demo_memory_usages() {
 
 fn demo_singleton_usage() {
     #[allow(static_mut_refs)]
-    let pa0 = unsafe { BOARD.take_input(GpioId::A, 0).unwrap() };    
+    let pa0 = unsafe { BOARD.take_input(&GpioId::A, 0).unwrap().into_floating() };
+    pa0.pin_is_high();
 }
 
 fn main() {
-
     demo_memory_usages();
     demo_singleton_usage();
 }

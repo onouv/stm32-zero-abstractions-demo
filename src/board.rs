@@ -1,4 +1,4 @@
-use crate::{gpio::*, port::*};
+use crate::{gpio::{self, DisabledInput, GpioId}};
 
 pub struct Led;
 
@@ -18,8 +18,9 @@ pub struct Board {
     // 96 usize :-) but be REALLY careful when indexing this
     ports: [[Option<()>; NUM_PINS]; NUM_GPIOX], 
 }
+
 impl Board {
-    pub fn take_input(&mut self, gpio: GpioId, pin: u32) -> Result<Gpio, BoardError> {
+    pub fn take_input(&mut self, gpio: &GpioId, pin: u8) -> Result<DisabledInput, BoardError> {
 
         // find index into flag matrix
         let (g,p): (usize, usize) = match (gpio, pin) {
@@ -39,8 +40,8 @@ impl Board {
             port.take();
         }
 
-        // TODO: At this point, the input port should have a set of the correct GPIOx registers it will need
-        Ok(Gpio::DisabledInput(DisabledInput { mode: Input, enabled: Disabled }))    }
+       Ok(gpio::new_input(gpio, pin))
+    }
 }
 
 pub static mut BOARD: Board = Board {

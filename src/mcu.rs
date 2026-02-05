@@ -1,6 +1,6 @@
 mod register;
 
-pub use register::*;
+pub use register::{ InputRegisterBlock, OutputRegisterBlock, Register };
 
 pub type Address = *mut u32;
 
@@ -18,4 +18,8 @@ mod addresses {
     pub const GPIO_IDR_OFFSET: u32 = 0x10;
     pub const GPIO_ODR_OFFSET: u32 = 0x14;
     pub const GPIO_BSRR_OFFSET: u32 = 0x18;
+}
+
+pub enum McuError {
+    Unknown,
 }

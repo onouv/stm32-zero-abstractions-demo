@@ -1,6 +1,6 @@
-use super::port::*;
+use crate::mcu::{ InputRegisterBlock, OutputRegisterBlock, Register };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum GpioId {
     A,
     B,
@@ -10,13 +10,15 @@ pub enum GpioId {
     F,
 }
 
-type InputPullUp = Port<Input, PinPullUp, Disabled, InputRegisterBlock>;
-type InputPullDown = Port<Input, PinPullDown, Disabled, InputRegisterBlock>;
+pub type DisabledInput = Port<Input, DontCare, DontCare, InputRegisterBlock>;
+type InputPullDown = Port<Input, PinPullDown, DontCare, InputRegisterBlock>;
+type InputPullUp = Port<Input, PinPullUp, DontCare, InputRegisterBlock>;
+type InputFloating = Port<Input, PinFloating, DontCare, InputRegisterBlock>;
+pub type DontCareOutput = Port<Output, DontCare, DontCare, OutputRegisterBlock>;
 type OutputPushPullPullUp = Port<Output, PinPullUp, PushPull, OutputRegisterBlock>;
 type OutputPushPullPullDown = Port<Output, PinPullDown, PushPull, OutputRegisterBlock>;
 type OutputOpenDrainPullUp = Port<Output, PinPullUp, OpenDrain, OutputRegisterBlock>;
-type OutputOpenDrainPullDown = Port<Output, PinPullcwDownUp, OpenDrain, OutputRegisterBlock>;
-
+type OutputOpenDrainPullDown = Port<Output, PinPullDown, OpenDrain, OutputRegisterBlock>;
 
 pub enum Gpio {
     InputPullUp(InputPullUp),
@@ -24,18 +26,18 @@ pub enum Gpio {
     OutputPushPullPullUp(OutputPushPullPullUp),
     OutputPushPullPullDown(OutputPushPullPullDown),
     OutputOpenDrainPullUp(OutputOpenDrainPullUp),
-    OutputOpenDrainPullDown(OutputOpenDrainPullDown) 
+    OutputOpenDrainPullDown(OutputOpenDrainPullDown),
 }
 
-struct Input;
-struct Output;
-
-struct PushPull;
-struct OpenDrain;
-struct Disabled;
-struct PinPullUp;
-struct PinPullDown;
-struct PinFloating;
+pub struct Input;
+pub struct Output;
+pub struct Enabled;
+pub struct DontCare;
+pub struct PushPull;
+pub struct OpenDrain;
+pub struct PinPullUp;
+pub struct PinPullDown;
+pub struct PinFloating;
 
 enum PinMode {
     PullUp,
@@ -46,39 +48,67 @@ enum PinMode {
 enum OutputType {
     PushPull,
     OpenDrain,
-    DontCare
 }
 
-pub struct Port<DIRECTION, PIN_MODE, OUTPUT_TYPE, REGISTERS> {
+pub struct Port<Direction, PinMode, OutputType, REGISTERS> {
     gpio: GpioId,
     pin: u8,
-    direction: DIRECTION,
-    pin_mode: PIN_MODE,
-    otype: OUTPUT_TYPE,
+    direction: Direction,
+    pin_mode: PinMode,
+    otype: OutputType,
     registers: REGISTERS,
 }
 
-impl<DIR, PIN, OTYPE, REG> Port<DIR, PIN, OTYPE, REG> {
-    fn into_input(self, id: GpioId, pin: u8, pin_mode: PinMode) -> Result<Gpio, ()> {
-        match pin_mode {
-            PinMode::PullUp => Ok(Gpio::InputPullUp(Port {
-                gpio: id,
-                pin,
-                direction: Input,
-                pin_mode: PinPullUp,
-                otype: Disabled,
-                registers: InputRegisterBlock,
-            })),
-            PinMode::PullDown => Ok(Gpio::InputPullDown(Port {
-                gpio: id,
-                pin,
-                direction: Input,
-                pin_mode: PinPullDown,
-                otype: Disabled,
-                registers: InputRegisterBlock,
-            })),
-            PinMode::Floating => Err(()),
-        }
+pub fn new_input(gpio: &GpioId, pin: u8) -> DisabledInput {
+    Port {
+        direction: Input,
+        pin_mode: DontCare,
+        otype: DontCare,
+        registers: InputRegisterBlock::new(),
+        pin,
+        gpio: *gpio,
     }
 }
 
+impl<PIN> Port<Input, PIN, DontCare, InputRegisterBlock> {
+    pub fn into_floating(self) -> InputFloating {
+        Port {
+            direction: Input,
+            pin_mode: PinFloating,
+            otype: DontCare,
+            registers: self.registers, 
+            gpio: self.gpio,
+            pin: self.pin,
+        }
+    }
+
+    pub fn into_pulled_up(self) -> InputPullUp {
+        Port {
+            direction: Input,
+            pin_mode: PinPullUp,
+            otype: DontCare,
+            registers: self.registers,
+            gpio: self.gpio,
+            pin: self.pin,
+        }
+    }
+
+    pub fn into_pulled_down(self) -> InputPullDown {
+        Port {
+            direction: Input,
+            pin_mode: PinPullDown,
+            otype: DontCare,
+            registers: self.registers,
+            gpio: self.gpio,
+            pin: self.pin,
+        }
+    }
+
+    pub fn pin_is_high(&self) -> bool {
+
+
+        // TODO: WRONG, just for testing, remove
+        self.registers.idr.set_bit(self.gpio, self.pin as u32, 0x32);
+        true
+    }
+}

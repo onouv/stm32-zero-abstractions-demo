@@ -5,11 +5,11 @@ use std::ops::Add;
 use crate::{gpio::GpioId, mcu::Address};
 
 use super::addresses::*;
-pub(crate) trait Register {
+pub trait Register {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32);
 }
 
-struct RCC_AHBENR;// AHB Peripheral Clock Enable Register
+pub struct RCC_AHBENR;// AHB Peripheral Clock Enable Register
 
 fn calc_gpio_offset(gpio: &GpioId) -> u32 {
     match gpio {
@@ -30,7 +30,6 @@ impl Register for RCC_AHBENR {
 }
 
 pub struct GPIOx_MODER;
-
 impl Register for GPIOx_MODER {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
         let _address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_MODER_OFFSET) as Address;
@@ -38,7 +37,7 @@ impl Register for GPIOx_MODER {
     }
 }
 
-struct GPIOx_OTYPER;
+pub struct GPIOx_OTYPER;
 impl Register for GPIOx_OTYPER {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
         let _address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_OTYPER_OFFSET) as Address;
@@ -46,52 +45,58 @@ impl Register for GPIOx_OTYPER {
     }
 }
 
-struct GPIOx_PUPDR;
+pub struct GPIOx_PUPDR;
 impl Register for GPIOx_PUPDR {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
         let _address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_PUPDR_OFFSET) as Address;
         println!("set bit {} to {} in AHBENR ({:?})", bit_pos, bit_val, &gpio);
     }
 }
-struct GPIOx_IDR;
+pub struct GPIOx_IDR;
 impl Register for GPIOx_IDR {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
-        let _address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_IDR_OFFSET) as Address;
-        println!("set bit {} to {} in AHBENR ({:?})", bit_pos, bit_val, &gpio);
+        let address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_IDR_OFFSET) as Address;
+        println!("set bit {} to {} in AHBENR ({:?}) @{}", bit_pos, bit_val, &gpio, address as u32);
     }
 }
-struct GPIOx_ODR;
+pub struct GPIOx_ODR;
 impl Register for GPIOx_ODR {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
         let _address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_ODR_OFFSET) as Address;
         println!("set bit {} to {} in AHBENR ({:?})", bit_pos, bit_val, &gpio);
     }
 }
-struct GPIOx_BSRR;
+pub struct GPIOx_BSRR;
 impl Register for GPIOx_BSRR {
-    fn new(gpio: GpioId) -> Self {
-        let Self = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_BSRR_OFFSET) as Address;
-    }
-
-    fn set_bit(bit_pos: u32, bit_val: u32) {
+    fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
+        let _address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_BSRR_OFFSET) as Address;
         println!("set bit {} to {} in AHBENR ({:?})", bit_pos, bit_val, &gpio);
     }
 }
 pub struct InputRegisterBlock {
     ahbenr: RCC_AHBENR,
     moder: GPIOx_MODER,
-    otyper: GPIOx_OTYPER,
-    idr: GPIOx_IDR
+    pub otyper: GPIOx_OTYPER,
+    pub idr: GPIOx_IDR
 }
-pub static INPUT_REGISTERS: InputRegisterBlock {
 
+impl InputRegisterBlock {
+    pub fn new() -> Self {
+        Self {
+            ahbenr: RCC_AHBENR {},
+            moder: GPIOx_MODER {},
+            otyper: GPIOx_OTYPER {},
+            idr: GPIOx_IDR {}
+        }
+    }
 }
+
 pub struct OutputRegisterBlock {
-    ahbenr: RCC_AHBENR,
-    moder: GPIOx_MODER,
-    otyper: GPIOx_OTYPER,
-    pupdr: GPIOx_PUPDR,
-    odr: GPIOx_ODR,
-    bsrr: GPIOx_BSRR
+    pub ahbenr: RCC_AHBENR,
+    pub moder: GPIOx_MODER,
+    pub otyper: GPIOx_OTYPER,
+    pub pupdr: GPIOx_PUPDR,
+    pub odr: GPIOx_ODR,
+    pub bsrr: GPIOx_BSRR
 }
 

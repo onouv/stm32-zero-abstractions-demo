@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    {
+        "type": "lldb",
+        "request": "launch",
+            "name": "Debug executable 'stmi32-zero-abstractions-demo'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=stmi32-zero-abstractions-demo",
+                    "--package=stmi32-zero-abstractions-demo"
+                ],
+                "filter": {
+                    "name": "stmi32-zero-abstractions-demo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'stmi32-zero-abstractions-demo'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=stmi32-zero-abstractions-demo",
+                    "--package=stmi32-zero-abstractions-demo"
+                ],
+                "filter": {
+                    "name": "stmi32-zero-abstractions-demo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

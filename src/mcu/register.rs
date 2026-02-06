@@ -1,4 +1,3 @@
-
 #![allow(clippy::upper_case_acronyms, non_camel_case_types)]
 use std::ops::Add;
 
@@ -9,7 +8,7 @@ pub trait Register {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32);
 }
 
-pub struct RCC_AHBENR;// AHB Peripheral Clock Enable Register
+pub struct RCC_AHBENR; // AHB Peripheral Clock Enable Register
 
 fn calc_gpio_offset(gpio: &GpioId) -> u32 {
     match gpio {
@@ -18,13 +17,13 @@ fn calc_gpio_offset(gpio: &GpioId) -> u32 {
         GpioId::C => 0x800,
         GpioId::D => 0xC00,
         GpioId::E => 0x1000,
-        GpioId::F => 0x1400
+        GpioId::F => 0x1400,
     }
 }
 
 impl Register for RCC_AHBENR {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
-        let _address =(RCC_BASE_ADDR + RCC_AHBENR_OFFSET) as Address;
+        let _address = (RCC_BASE_ADDR + RCC_AHBENR_OFFSET) as Address;
         println!("set bit {} to {} in AHBENR ({:?})", bit_pos, bit_val, gpio);
     }
 }
@@ -56,7 +55,10 @@ pub struct GPIOx_IDR;
 impl Register for GPIOx_IDR {
     fn set_bit(&self, gpio: GpioId, bit_pos: u32, bit_val: u32) {
         let address = (GPIO_BASE_ADDR + calc_gpio_offset(&gpio) + GPIO_IDR_OFFSET) as Address;
-        println!("set bit {} to {} in AHBENR ({:?}) @{}", bit_pos, bit_val, &gpio, address as u32);
+        println!(
+            "set bit {} to {} in AHBENR ({:?}) @{}",
+            bit_pos, bit_val, &gpio, address as u32
+        );
     }
 }
 pub struct GPIOx_ODR;
@@ -77,7 +79,7 @@ pub struct InputRegisterBlock {
     ahbenr: RCC_AHBENR,
     moder: GPIOx_MODER,
     pub otyper: GPIOx_OTYPER,
-    pub idr: GPIOx_IDR
+    pub idr: GPIOx_IDR,
 }
 
 impl InputRegisterBlock {
@@ -86,7 +88,7 @@ impl InputRegisterBlock {
             ahbenr: RCC_AHBENR {},
             moder: GPIOx_MODER {},
             otyper: GPIOx_OTYPER {},
-            idr: GPIOx_IDR {}
+            idr: GPIOx_IDR {},
         }
     }
 }
@@ -97,6 +99,18 @@ pub struct OutputRegisterBlock {
     pub otyper: GPIOx_OTYPER,
     pub pupdr: GPIOx_PUPDR,
     pub odr: GPIOx_ODR,
-    pub bsrr: GPIOx_BSRR
+    pub bsrr: GPIOx_BSRR,
 }
 
+impl OutputRegisterBlock {
+    pub fn new() -> Self {
+        Self {
+            ahbenr: RCC_AHBENR,
+            moder: GPIOx_MODER,
+            otyper: GPIOx_OTYPER,
+            pupdr: GPIOx_PUPDR,
+            odr: GPIOx_ODR,
+            bsrr: GPIOx_BSRR,
+        }
+    }
+}

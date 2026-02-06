@@ -1,4 +1,4 @@
-use crate::mcu::{ InputRegisterBlock, OutputRegisterBlock, Register };
+use crate::mcu::{InputRegisterBlock, OutputRegisterBlock, Register};
 
 #[derive(Debug, Clone, Copy)]
 pub enum GpioId {
@@ -11,23 +11,15 @@ pub enum GpioId {
 }
 
 pub type DisabledInput = Port<Input, DontCare, DontCare, InputRegisterBlock>;
-type InputPullDown = Port<Input, PinPullDown, DontCare, InputRegisterBlock>;
-type InputPullUp = Port<Input, PinPullUp, DontCare, InputRegisterBlock>;
-type InputFloating = Port<Input, PinFloating, DontCare, InputRegisterBlock>;
-pub type DontCareOutput = Port<Output, DontCare, DontCare, OutputRegisterBlock>;
-type OutputPushPullPullUp = Port<Output, PinPullUp, PushPull, OutputRegisterBlock>;
-type OutputPushPullPullDown = Port<Output, PinPullDown, PushPull, OutputRegisterBlock>;
-type OutputOpenDrainPullUp = Port<Output, PinPullUp, OpenDrain, OutputRegisterBlock>;
-type OutputOpenDrainPullDown = Port<Output, PinPullDown, OpenDrain, OutputRegisterBlock>;
+pub type InputPullDown = Port<Input, PinPullDown, DontCare, InputRegisterBlock>;
+pub type InputPullUp = Port<Input, PinPullUp, DontCare, InputRegisterBlock>;
+pub type InputFloating = Port<Input, PinFloating, DontCare, InputRegisterBlock>;
 
-pub enum Gpio {
-    InputPullUp(InputPullUp),
-    InputPullDown(InputPullDown),
-    OutputPushPullPullUp(OutputPushPullPullUp),
-    OutputPushPullPullDown(OutputPushPullPullDown),
-    OutputOpenDrainPullUp(OutputOpenDrainPullUp),
-    OutputOpenDrainPullDown(OutputOpenDrainPullDown),
-}
+pub type DisabledOutput = Port<Output, DontCare, DontCare, OutputRegisterBlock>;
+pub type OutputPushPullPullUp = Port<Output, PinPullUp, PushPull, OutputRegisterBlock>;
+pub type OutputPushPullPullDown = Port<Output, PinPullDown, PushPull, OutputRegisterBlock>;
+pub type OutputOpenDrainPullUp = Port<Output, PinPullUp, OpenDrain, OutputRegisterBlock>;
+pub type OutputOpenDrainPullDown = Port<Output, PinPullDown, OpenDrain, OutputRegisterBlock>;
 
 pub struct Input;
 pub struct Output;
@@ -38,6 +30,19 @@ pub struct OpenDrain;
 pub struct PinPullUp;
 pub struct PinPullDown;
 pub struct PinFloating;
+
+// Marker trait to indicate the input pin mode is configured (not `DontCare`).
+pub trait ConfiguredInput {}
+impl ConfiguredInput for PinPullUp {}
+impl ConfiguredInput for PinPullDown {}
+impl ConfiguredInput for PinFloating {}
+
+// marker trait to indicate output pins are configured (not `DontCare`).
+pub trait ConfiguredOutput {}
+impl ConfiguredOutput for PushPull {}
+impl ConfiguredOutput for OpenDrain {}
+impl ConfiguredOutput for PinPullUp {}
+impl ConfiguredOutput for PinPullDown {}
 
 enum PinMode {
     PullUp,
@@ -59,6 +64,63 @@ pub struct Port<Direction, PinMode, OutputType, REGISTERS> {
     registers: REGISTERS,
 }
 
+pub fn new_output(gpio: &GpioId, pin: u8) -> DisabledOutput {
+    Port {
+        gpio: *gpio,
+        pin,
+        direction: Output,
+        pin_mode: DontCare,
+        otype: DontCare,
+        registers: OutputRegisterBlock::new(),
+    }
+}
+
+impl<PINMOD, OTYPE> Port<Output, PINMOD, OTYPE, OutputRegisterBlock> {
+    pub fn into_pushpull_pulled_up(self) -> OutputPushPullPullUp {
+        Port {
+            gpio: self.gpio,
+            pin: self.pin,
+            direction: Output,
+            pin_mode: PinPullUp,
+            otype: PushPull,
+            registers: self.registers,
+        }
+    }
+
+    pub fn into_pushpull_pulled_down(self) -> OutputPushPullPullDown {
+        Port {
+            gpio: self.gpio,
+            pin: self.pin,
+            direction: Output,
+            pin_mode: PinPullDown,
+            otype: PushPull,
+            registers: self.registers,
+        }
+    }
+
+    pub fn into_open_drain_pull_up(self) -> OutputOpenDrainPullUp {
+        Port {
+            gpio: self.gpio,
+            pin: self.pin,
+            direction: Output,
+            pin_mode: PinPullUp,
+            otype: OpenDrain,
+            registers: self.registers,
+        }
+    }
+
+    pub fn into_open_drain_pull_down(self) -> OutputOpenDrainPullDown {
+        Port {
+            gpio: self.gpio,
+            pin: self.pin,
+            direction: Output,
+            pin_mode: PinPullDown,
+            otype: OpenDrain,
+            registers: self.registers,
+        }
+    }
+}
+
 pub fn new_input(gpio: &GpioId, pin: u8) -> DisabledInput {
     Port {
         direction: Input,
@@ -70,13 +132,13 @@ pub fn new_input(gpio: &GpioId, pin: u8) -> DisabledInput {
     }
 }
 
-impl<PIN> Port<Input, PIN, DontCare, InputRegisterBlock> {
+impl<PINMOD> Port<Input, PINMOD, DontCare, InputRegisterBlock> {
     pub fn into_floating(self) -> InputFloating {
         Port {
             direction: Input,
             pin_mode: PinFloating,
             otype: DontCare,
-            registers: self.registers, 
+            registers: self.registers,
             gpio: self.gpio,
             pin: self.pin,
         }
@@ -103,12 +165,28 @@ impl<PIN> Port<Input, PIN, DontCare, InputRegisterBlock> {
             pin: self.pin,
         }
     }
+}
 
+impl<PINMOD: ConfiguredInput> Port<Input, PINMOD, DontCare, InputRegisterBlock> {
     pub fn pin_is_high(&self) -> bool {
-
-
-        // TODO: WRONG, just for testing, remove
-        self.registers.idr.set_bit(self.gpio, self.pin as u32, 0x32);
+        // Read the input data register for the configured pin.
+        // Actual register-read logic not yet implemented; keep placeholder.
+        println!("Reading pin {} of GPIO {:?}", self.pin, self.gpio);
+        
         true
+    }
+}
+
+impl <PINMOD, OTYPE: ConfiguredOutput> Port<Output, PINMOD, OTYPE, OutputRegisterBlock> {
+    pub fn set_high(&self) {
+        // Write to the output data register for the configured pin.
+        // Actual register-write logic not yet implemented; keep placeholder.
+        println!("Setting pin {} of GPIO {:?} high", self.pin, self.gpio);
+    }
+
+    pub fn set_low(&self) {
+        // Write to the output data register for the configured pin.
+        // Actual register-write logic not yet implemented; keep placeholder.
+        println!("Setting pin {} of GPIO {:?} low", self.pin, self.gpio);
     }
 }

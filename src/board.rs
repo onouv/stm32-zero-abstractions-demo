@@ -75,7 +75,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn pe8_out_of_bounds_returns_error() {
+    fn out_of_bounds_returns_error() {
         unsafe {
 
             #[allow(static_mut_refs)]

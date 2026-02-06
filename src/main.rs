@@ -43,16 +43,36 @@ fn demo_singleton_usage() {
         pa2.pin_is_high();
 
         println!("Demonstrating any configured output pin can set its state:");
-        let pe0 = unsafe { BOARD.take_output(&GpioId::E, 0).unwrap().into_pushpull_pulled_up() };
+        let pe0 = unsafe {
+            BOARD
+                .take_output(&GpioId::E, 0)
+                .unwrap()
+                .into_pushpull_pulled_up()
+        };
         pe0.set_high();
 
-        let pe1 = unsafe { BOARD.take_output(&GpioId::E, 1).unwrap().into_pushpull_pulled_down() };
+        let pe1 = unsafe {
+            BOARD
+                .take_output(&GpioId::E, 1)
+                .unwrap()
+                .into_pushpull_pulled_down()
+        };
         pe1.set_low();
 
-        let pe2 = unsafe { BOARD.take_output(&GpioId::E, 2).unwrap().into_open_drain_pull_up() };
+        let pe2 = unsafe {
+            BOARD
+                .take_output(&GpioId::E, 2)
+                .unwrap()
+                .into_open_drain_pull_up()
+        };
         pe2.set_high();
 
-        let pe3 = unsafe { BOARD.take_output(&GpioId::E, 3).unwrap().into_open_drain_pull_down() };
+        let pe3 = unsafe {
+            BOARD
+                .take_output(&GpioId::E, 3)
+                .unwrap()
+                .into_open_drain_pull_down()
+        };
         pe3.set_low();
     }
 }

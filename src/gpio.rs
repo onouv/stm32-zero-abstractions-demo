@@ -46,17 +46,6 @@ impl ConfiguredOutput for OpenDrain {}
 impl ConfiguredOutput for PinPullUp {}
 impl ConfiguredOutput for PinPullDown {}
 
-enum PinMode {
-    PullUp,
-    PullDown,
-    Floating,
-}
-
-enum OutputType {
-    PushPull,
-    OpenDrain,
-}
-
 pub struct Port<Direction, PinMode, OutputType, REGISTERS> {
     gpio: GpioId,
     pin: u8,

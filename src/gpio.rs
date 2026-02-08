@@ -16,6 +16,8 @@ pub type InputPullUp = Port<Input, PinPullUp, DontCare, InputRegisterBlock>;
 pub type InputFloating = Port<Input, PinFloating, DontCare, InputRegisterBlock>;
 
 pub type DisabledOutput = Port<Output, DontCare, DontCare, OutputRegisterBlock>;
+pub type OutputPushPull = Port<Output, DontCare, PushPull, OutputRegisterBlock>;
+pub type OutputOpenDrain = Port<Output, DontCare, OpenDrain, OutputRegisterBlock>;
 pub type OutputPushPullPullUp = Port<Output, PinPullUp, PushPull, OutputRegisterBlock>;
 pub type OutputPushPullPullDown = Port<Output, PinPullDown, PushPull, OutputRegisterBlock>;
 pub type OutputOpenDrainPullUp = Port<Output, PinPullUp, OpenDrain, OutputRegisterBlock>;
@@ -75,8 +77,32 @@ pub fn new_output(gpio: &GpioId, pin: u8) -> DisabledOutput {
     }
 }
 
-impl<PINMOD, OTYPE> Port<Output, PINMOD, OTYPE, OutputRegisterBlock> {
-    pub fn into_pushpull_pulled_up(self) -> OutputPushPullPullUp {
+impl<OTYPE> Port<Output, DontCare, OTYPE, OutputRegisterBlock> {
+    pub fn into_push_pull(self) -> OutputPushPull {
+        Port {
+            gpio: self.gpio,
+            pin: self.pin,
+            direction: Output,
+            pin_mode: DontCare,
+            otype: PushPull,
+            registers: OutputRegisterBlock::new()
+        }
+    }
+
+    pub fn into_open_drain(self) -> OutputPushPull {
+        Port {
+            gpio: self.gpio,
+            pin: self.pin,
+            direction: Output,
+            pin_mode: DontCare,
+            otype: PushPull,
+            registers: OutputRegisterBlock::new()
+        }
+    }
+}
+
+impl<PINMOD> Port<Output, PINMOD, PushPull, OutputRegisterBlock> {
+    pub fn into_pulled_up(self) -> OutputPushPullPullUp {
         Port {
             gpio: self.gpio,
             pin: self.pin,
@@ -87,7 +113,7 @@ impl<PINMOD, OTYPE> Port<Output, PINMOD, OTYPE, OutputRegisterBlock> {
         }
     }
 
-    pub fn into_pushpull_pulled_down(self) -> OutputPushPullPullDown {
+    pub fn into_pulled_down(self) -> OutputPushPullPullDown {
         Port {
             gpio: self.gpio,
             pin: self.pin,
@@ -97,8 +123,10 @@ impl<PINMOD, OTYPE> Port<Output, PINMOD, OTYPE, OutputRegisterBlock> {
             registers: self.registers,
         }
     }
+}
 
-    pub fn into_open_drain_pull_up(self) -> OutputOpenDrainPullUp {
+impl<PINMOD> Port<Output, PINMOD, OpenDrain, OutputRegisterBlock> {
+    pub fn into_pulled_up(self) -> OutputOpenDrainPullUp {
         Port {
             gpio: self.gpio,
             pin: self.pin,
@@ -109,7 +137,7 @@ impl<PINMOD, OTYPE> Port<Output, PINMOD, OTYPE, OutputRegisterBlock> {
         }
     }
 
-    pub fn into_open_drain_pull_down(self) -> OutputOpenDrainPullDown {
+    pub fn into_pulled_down(self) -> OutputOpenDrainPullDown {
         Port {
             gpio: self.gpio,
             pin: self.pin,

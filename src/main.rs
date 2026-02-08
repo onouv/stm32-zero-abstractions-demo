@@ -47,7 +47,7 @@ fn demo_singleton_usage() {
             BOARD
                 .take_output(&GpioId::E, 0)
                 .unwrap()
-                .into_pushpull_pulled_up()
+                .into_push_pull()
         };
         pe0.set_high();
 
@@ -55,7 +55,8 @@ fn demo_singleton_usage() {
             BOARD
                 .take_output(&GpioId::E, 1)
                 .unwrap()
-                .into_pushpull_pulled_down()
+                .into_push_pull()
+                .into_pulled_up()
         };
         pe1.set_low();
 
@@ -63,7 +64,8 @@ fn demo_singleton_usage() {
             BOARD
                 .take_output(&GpioId::E, 2)
                 .unwrap()
-                .into_open_drain_pull_up()
+                .into_open_drain()
+                .into_pulled_up()
         };
         pe2.set_high();
 
@@ -71,7 +73,8 @@ fn demo_singleton_usage() {
             BOARD
                 .take_output(&GpioId::E, 3)
                 .unwrap()
-                .into_open_drain_pull_down()
+                .into_open_drain()
+                .into_pulled_down()
         };
         pe3.set_low();
     }
